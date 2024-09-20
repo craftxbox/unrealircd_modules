@@ -5,13 +5,13 @@ module "third/auditorium2"
         author "Gottem, craftxbox";
         documentation "https://github.com/craftxbox/unrealircd_modules/auditorium.md";
         troubleshooting "In case of problems, PM me @craftxbox on libera.chat";
-        source "https://raw.githubusercontent.com/craftxbox/unrealircd_modules/242ed9/auditorium.c";
-        sha256sum "649fa44536d0056a7b2d94f75d6955aaf8e3f2527a5d21f1a19596b9399b1c7c";
+        source "https://raw.githubusercontent.com/craftxbox/unrealircd_modules/92d7f91/auditorium.c";
+        sha256sum "9def7b38ac0b51a2d8ebfd5dafa4a82c45107ed91cf1e070570c31c5fdc48be4";
         min-unrealircd-version "6.*";
         post-install-text
         {
                 "The module is installed, now all you need to do is add a 'loadmodule' line to your config file:";
-                "loadmodule \"third/auditorium\";";
+                "loadmodule \"third/auditorium2\";";
                 "Then /rehash the IRCd.";
                 "For usage information, refer to the module's documentation found at: https://github.com/craftxbox/unrealircd_modules/auditorium.md";
         }
