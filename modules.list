@@ -1,4 +1,4 @@
-module "third/auditorium"
+module "third/auditorium2"
 {
         description "Channel mode +u to show channel events/messages to/from people with +o/+a/+q only";
         version "3.0.0";
