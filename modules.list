@@ -1,0 +1,18 @@
+module "third/auditorium"
+{
+        description "Channel mode +u to show channel events/messages to/from people with +o/+a/+q only";
+        version "3.0.0";
+        author "Gottem, craftxbox";
+        documentation "https://github.com/craftxbox/unrealircd_modules/auditorium.md";
+        troubleshooting "In case of problems, PM me @craftxbox on libera.chat";
+        source "https://github.com/craftxbox/unrealircd_modules/blob/242ed9b/auditorium.c";
+        sha256sum "649fa44536d0056a7b2d94f75d6955aaf8e3f2527a5d21f1a19596b9399b1c7c";
+        min-unrealircd-version "6.*";
+        post-install-text
+        {
+                "The module is installed, now all you need to do is add a 'loadmodule' line to your config file:";
+                "loadmodule \"third/auditorium\";";
+                "Then /rehash the IRCd.";
+                "For usage information, refer to the module's documentation found at: https://github.com/craftxbox/unrealircd_modules/auditorium.md";
+        }
+}
