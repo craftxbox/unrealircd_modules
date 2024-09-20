@@ -5,8 +5,8 @@ module "third/auditorium"
         author "Gottem, craftxbox";
         documentation "https://github.com/craftxbox/unrealircd_modules/auditorium.md";
         troubleshooting "In case of problems, PM me @craftxbox on libera.chat";
-        source "https://github.com/craftxbox/unrealircd_modules/blob/242ed9b/auditorium.c";
-        sha256sum "7d8b937707bbc8699d7cba23007fb7db618a62032226c4d775eff76df654d5cb";
+        source "https://raw.githubusercontent.com/craftxbox/unrealircd_modules/242ed9/auditorium.c";
+        sha256sum "649fa44536d0056a7b2d94f75d6955aaf8e3f2527a5d21f1a19596b9399b1c7c";
         min-unrealircd-version "6.*";
         post-install-text
         {
