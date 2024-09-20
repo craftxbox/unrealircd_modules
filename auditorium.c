@@ -12,7 +12,7 @@ module {
 	min-unrealircd-version "6.*";
 	post-install-text {
 		"The module is installed, now all you need to do is add a 'loadmodule' line to your config file:";
-		"loadmodule \"third/auditorium\";";
+		"loadmodule \"third/auditorium2\";";
 		"Then /rehash the IRCd.";
 		"For usage information, refer to the module's documentation found at: https://github.com/craftxbox/unrealircd_modules/auditorium.md";
 	}
@@ -49,7 +49,7 @@ Cmode_t extcmode_auditorium = 0L; // Store bitwise value latur
 
 // Dat dere module header
 ModuleHeader MOD_HEADER = {
-	"third/auditorium", // Module name
+	"third/auditorium2", // Module name
 	"3.0.0", // Version
 	"Channel mode +u to show channel events/messages to/from people with +o/+a/+q only", // Description
 	"Gottem, craftxbox", // Author
