@@ -130,10 +130,6 @@ int modeu_sjoin_check(Channel *channel, void *our, void *their)
 		temp[++i] = 'q';
 	}
 
-	if(strchr(ours,'Y') || strchr(theirs,'Y')) {
-		temp[++i] = 'Y';
-	}
-
 	char *temp2 = safe_alloc(i+1);
 
 	memcpy(temp2, temp, i+1);
@@ -206,7 +202,7 @@ int auditorium_chmode_isok(Client *client, Channel *channel, char mode, const ch
 	*/
 	if((checkt == EXCHK_ACCESS) || (checkt == EXCHK_ACCESS_ERR)) { // Access check lol
 		// Check if the user has +a or +q (OperOverride automajikally overrides this bit ;])
-		if(!check_channel_access(client, channel, "aq")) {
+		if(!check_channel_access(client, channel, "aqY")) {
 			if(checkt == EXCHK_ACCESS_ERR)
 				sendnumeric(client, ERR_CHANOWNPRIVNEEDED, channel->name);
 			return EX_DENY;
@@ -222,8 +218,7 @@ int auditorium_chmode_isok(Client *client, Channel *channel, char mode, const ch
 			if(s == 'o') continue;
 			if(s == 'a') continue;
 			if(s == 'q') continue;
-			if(s == 'Y') continue; // so it works with third/ojoin
-			sendnotice(client, "ChanMode +u: ERROR: Paramter must be one or more of vhoaqY");
+			sendnotice(client, "ChanMode +u: ERROR: Parameter must be one or more of vhoaq");
 			return EX_DENY;
 		}
 		return EX_ALLOW;
@@ -237,12 +232,24 @@ int auditorium_chmode_isok(Client *client, Channel *channel, char mode, const ch
 	int auditorium_hook_visibleinchan(Client *target, Channel *channel, Member *client_member)
 #endif
 {
-	if(IsAudit(channel) && !check_channel_access(target, channel, "hoaqY") && !IsULine(target)) // If channel has +u and the checked user (not you) doesn't have +o or higher...
-		return HOOK_DENY; // ...don't show in /names etc
+	auditoriumParam *param = GETPARASTRUCT(channel, CHMODE_FLAG);
+
+	// due to internal reasons, unreal refuses to hide users that have +vhoaq
+	// and also refuses to hide anyone from users with +hoaq
+	if(IsAudit(channel) && !check_channel_access(target, channel, param->speakerModes) 
+	#if __has_include("ojoin.c")
+		&& !check_channel_access(target, channel, "Y") 
+	#else
+		&& !IsOper(target) // show opers anyway if we dont have third/ojoin
+	#endif
+		&& !IsULine(target))
+		return -1; // ...don't show in /names etc
 	return HOOK_CONTINUE;
 }
 
 int auditorium_hook_cansend_chan(Client *client, Channel *channel, Membership *lp, const char **text, const char **errmsg, SendType sendtype) {
+	auditoriumParam *param = GETPARASTRUCT(channel, CHMODE_FLAG);
+
 	// Let's not act on TAGMSG for the time being :>
 	if(sendtype != SEND_TYPE_PRIVMSG && sendtype != SEND_TYPE_NOTICE)
 		return HOOK_CONTINUE;
@@ -252,14 +259,30 @@ int auditorium_hook_cansend_chan(Client *client, Channel *channel, Membership *l
 	int notice = (sendtype == SEND_TYPE_NOTICE);
 	MessageTag *mtags = NULL;
 
-	if(IsAudit(channel) && IsUser(client) && !check_channel_access(client, channel, "hoaqY") && !IsOper(client) && !IsULine(client)) { // If channel has +u and you don't have +o or higher...
+	if(IsAudit(channel) && IsUser(client) && 
+		!check_channel_access(client, channel, param->speakerModes) &&  // regular check if user has the modes specified in +u
+#if __has_include("ojoin.c")
+		!check_channel_access(client, channel, "Y") && // Use OJOIN to bypass +u if we have the third/ojoin module
+#else
+		!IsOper(client) && // don't hide messages originating from IRCops
+#endif
+		!IsULine(client)) { // check if user is an IRCop (OJOINed) or U:lined
 		// In case the user is banned just keep processing the hooks as usual, since one of them will finally interrupt and (prolly) emit a message =]
 		if(is_banned(client, channel, BANCHK_MSG, text, NULL))
 			return HOOK_CONTINUE;
 
 		// ..."relay" the message to +o etc only
 		new_message(client, NULL, &mtags);
-		sendto_channel(channel, client, NULL, "hoaqY", 0, SEND_ALL, mtags, ":%s %s @%s :%s", client->name, (notice ? "NOTICE" : "PRIVMSG"), channel->name, *text);
+
+		char* speakerModes = param->speakerModes;
+#ifdef __has_include("ojoin.c") // add Y to speakerModes if third/ojoin is installed, don't hide messages away from users with +Y
+		char* tempSpeakerModes = safe_alloc(strlen(speakerModes) + 1);
+		strcpy(tempSpeakerModes, speakerModes);
+		strcat(tempSpeakerModes, "Y");
+		speakerModes = tempSpeakerModes;
+#endif // no else, if an oper needs to bypass +u they will have to SAMODE themselves accordingly.
+
+		sendto_channel(channel, client, NULL, speakerModes, 0, SEND_ALL, mtags, ":%s %s @%s :%s", client->name, (notice ? "NOTICE" : "PRIVMSG"), channel->name, *text);
 		*text = NULL;
 		free_message_tags(mtags);
 		// Can't return HOOK_DENY here cuz Unreal might abort() in that case :D
