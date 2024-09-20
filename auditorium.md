@@ -24,4 +24,6 @@ I was also inspired by third/ojoin so decided to integrate them together.
   
 # License
 
+Credit to `Gottem`, who wrote the [original third/auditorium](https://gottem.nl/unreal/man/auditorium)
+
 [AGPLv3](https://gnu.org/licenses/agpl-3.0.html)
